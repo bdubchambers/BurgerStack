@@ -2,7 +2,8 @@ import java.util.NoSuchElementException;
 
 /**
  * 
- * @author Brandon Chambers
+ * @author Brandon Chambers 
+ *         Brendan Crawford
  *
  * @param <T>
  * 
