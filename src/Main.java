@@ -8,7 +8,8 @@ import java.util.StringTokenizer;
 
 /**
  * 
- * @author Brandon Chambers
+ * @author Brandon Chambers 
+ *         Brendan Crawford
  *
  *         Main is used to read in the input files and test and run the Burger
  *         class
