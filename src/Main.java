@@ -1,93 +1,304 @@
-/*
-You will also provide a Main class for control and testing of your evolutionary algorithm.
-void main(String[] args) 
-	-this method should instantiate a population and call day()
-		until the target string is part of the population.
- 	-The target string has fitness zero so the loop should repeat until the most fit
-		genome has fitness zero.
- 	-After each execution of day() output the most fit genome.
- 	-To measure performance output the number of generations (i.e times day() is
-		called) and the execution time.
-void testGenome() 
-	this method tests the Genome class.
-void testPopulation() 
-	this method tests the Population class.
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
-Include any other methods used to test components of your Genome and Population classes
- */
 /**
  * 
- * @author Brandon Chambers and Brendan Crawford
+ * @author Brandon Chambers
  *
+ *         Main is used to read in the input files and test and run the Burger
+ *         class
  */
 public class Main
 {
-	// instantiated population -- our initial group of Genomes
-	public static Population population;
+	static Burger testBaronBurger;
+	static Burger testBurger;
+	static Burger burger;
+	static Burger baronBurger;
 
-	public static Genome gene1;// for testGenome()
-	public static Genome gene2;// for testGenome()
+	static final boolean theWorks = true;
+	static final boolean simpleBurger = false;
+
+	static File file = new File("customer.txt");
+
+	static int orderNum = 0;
 
 	public static void main(String[] args)
 	{
-		// start the stopwatch for running time
-		long startTime = System.nanoTime();
-
-		population = new Population(20, 0.05);
-		//testPopulation();
-		//testGenome();
-		breedingCycle();
-		
-		System.out.println("Generations: "+Population.dayCounter);
-
-		// stop the running time stopwatch and display it at the end of output
-		long estimatedTime = System.nanoTime() - startTime;
-		System.out.println("Running Time: " + estimatedTime / 1000000
-		        + " milliseconds");
-	}
-
-	private static void breedingCycle()
-	{
-		// call day() til the target string is found in population of genomes
-		while (Population.mostFit.fitness() > 0)
+		BufferedReader br;
+		ArrayList<String> customerOrder = new ArrayList<String>();
+		try
 		{
-			population.day();
-			if(Population.dayCounter%200==0)
+			br = new BufferedReader(new FileReader(file));
+			String order = null;
+
+			while ((order = br.readLine()) != null)
 			{
-				System.out.println(Population.mostFit);
+				customerOrder.add(order);
+				order = null;
 			}
-			
+			br.close();
 		}
-		System.out.println(Population.mostFit);
-	}
-
-	static void testGenome()
-	{
-		gene1 = new Genome(0.05);
-		gene2 = new Genome(gene1);
-		System.out.println(gene1.fitness());
-		gene2.crossover(gene1);
-		System.out.println("after crossover   ---   " + gene2);
-	}
-
-	static void testPopulation()
-	{
-		population = new Population(20, 0.05);
-		// test output
-		// gene1.fitness();
-		for (char c : Genome.SET)
-			System.out.print(c);
-
-		for (Genome g : Population.geneList)
-			System.out.println(g.toString());
-
-		for (Genome g : Population.geneList)
+		catch (FileNotFoundException e)
 		{
-			g.mutate();
+			e.printStackTrace();
 		}
-		for (Genome g : Population.geneList)
-			System.out.println(g);
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 
+		for (String s : customerOrder)
+		{
+			parseLine(s);
+		}
+
+		System.out.println("\n-----(uncomment in main)--testBurger()-----------------------------");
+		// testBurger();
+		System.out.println("\n-----(uncomment in main)--testMyStack()-----------------------------");
+		// testMyStack();
 	}
 
+	// parses a line of input from the file and outputs the burger
+	public static void parseLine(String line)
+	{
+		burger = new Burger(simpleBurger);
+
+		int butIndex = -1;
+		int withIndex = -1;
+
+		boolean foundBaron = false;
+		ArrayList<String> str = new ArrayList<String>();
+		StringTokenizer arr = new StringTokenizer(line);
+		while (arr.hasMoreTokens())
+		{
+			str.add(arr.nextToken());
+		}
+
+		if (str.contains("no"))
+			str.remove(str.indexOf("no"));
+		if (str.contains("and"))
+			str.remove(str.indexOf("and"));
+		if (str.contains("but"))
+			butIndex = str.indexOf("but");
+		if (str.contains("with"))
+			withIndex = str.indexOf("with");
+
+		if (str.contains("Baron"))
+		{
+			foundBaron = true;
+			burger = new Burger(theWorks);
+		}
+
+		if (butIndex > -1)
+		{
+			for (int i = withIndex + 1; i < butIndex; i++)
+			{
+				if (foundBaron)
+				{
+					burger.removeCategory(str.get(i));
+					burger.removeIngredient(str.get(i));
+				}
+				else
+				{
+					burger.addCategory(str.get(i));
+					burger.addIngredient(str.get(i));
+				}
+			}
+			for (int j = butIndex + 1; j <= str.size() - 1; j++)
+			{
+				if (foundBaron)
+				{
+					burger.addCategory(str.get(j));
+					burger.addIngredient(str.get(j));
+				}
+				else
+				{
+					burger.removeCategory(str.get(j));
+					burger.removeIngredient(str.get(j));
+				}
+			}
+		}
+
+		if (butIndex == -1)
+		{
+			for (int i = withIndex + 1; i <= str.size() - 1; i++)
+			{
+				if (foundBaron)
+				{
+					burger.removeCategory(str.get(i));
+					burger.removeIngredient(str.get(i));
+				}
+				else if (!foundBaron)
+				{
+					burger.addCategory(str.get(i));
+					burger.addIngredient(str.get(i));
+				}
+			}
+
+		}
+
+		if (str.contains("Chicken"))
+		{
+			burger.changePatties("Chicken");
+		}
+		if (str.contains("Veggie"))
+		{
+			burger.changePatties("Veggie");
+		}
+		if (str.contains("Double"))
+		{
+			burger.addPatty();
+		}
+		if (str.contains("Triple"))
+		{
+			burger.addPatty();
+			burger.addPatty();
+		}
+
+		System.out.println("Processing Order " + orderNum + ": " + line + "\n"
+		        + burger + "\n");
+		if (orderNum < 100)
+			orderNum++;
+		if (orderNum == 99)
+			orderNum = 0;
+		burger.clear();
+	}
+
+	// test method for MyStack
+	static void testMyStack()
+	{
+		MyStack<String> stack = new MyStack<String>();
+		System.out.println("stack.isEmpty() -- " + stack.isEmpty());
+		stack.push("bun");
+		stack.push("beef");
+		stack.push("cheese");
+		stack.push("pickle");
+		System.out.println("We have now called stack.push('') with bun, beef, cheese, pickle");
+		System.out.println("stack.peek() -- " + stack.peek());
+		System.out.println("stack.isEmpty() -- " + stack.isEmpty());
+		System.out.println("sys.out.println(stack) -- " + stack.toString());
+		System.out.println("stack.size() -- " + stack.size());
+		System.out.println("stack.pop() -- " + stack.pop());
+		System.out.println("stack.peek() -- " + stack.peek());
+		System.out.println("stack.size() -- " + stack.size());
+		System.out.println("stack.toString() -- " + stack.toString());
+		System.out.println("stack.pop() -- " + stack.pop());
+		System.out.println("stack.size() -- " + stack.size());
+		System.out.println("stack.toString() -- " + stack.toString());
+		System.out.println("stack.pop() -- " + stack.pop());
+		System.out.println("stack.size() -- " + stack.size());
+		System.out.println("stack.toString() -- " + stack.toString());
+		System.out.println("stack.pop() -- " + stack.pop());
+		System.out.println("stack.size() -- " + stack.size());
+		System.out.println("stack.toString() -- " + stack.toString());
+	}
+
+	// test method for Burger
+	static void testBurger()
+	{
+
+		testBurger = new Burger(simpleBurger);
+		System.out.println("\nburger.toString() --\t\t\t"
+		        + testBurger.toString() + "\n");
+
+		testBurger.addCategory("Cheese");
+		System.out.println("burger.addCategory('Cheese')-- \t\t"
+		        + testBurger.toString() + "\n");
+
+		testBurger.removeIngredient("Mozzarella");
+		System.out.println("burger.removeIngredient('Mozzarella')-- "
+		        + testBurger.toString() + "\n");
+
+		testBurger.addIngredient("Mozzarella");
+		System.out.println("burger.addIngredient('Mozzarella')--\t"
+		        + testBurger.toString() + "\n");
+
+		testBurger.addPatty();
+		System.out.println("burger.addPatty()  --  \t\t"
+		        + testBurger.toString() + "\n");
+
+		testBurger.addCategory("Sauces");
+		System.out.println("burger.addCategory('Sauces')-- \t\t"
+		        + testBurger.toString() + "\n");
+
+		testBurger.removeCategory("Cheese");
+		System.out.println("burger.removeCategory('Cheese')-- \t"
+		        + testBurger.toString() + "\n");
+
+		testBaronBurger = new Burger(theWorks);
+		System.out.println("baronBurger.toString() --\t\t"
+		        + testBaronBurger.toString() + "\n");
+
+		testBaronBurger.addPatty();
+		System.out.println("baronBurger.addPatty() -- \t\t" + testBaronBurger
+		        + "\n");
+
+		testBaronBurger.changePatties("Chicken");
+		System.out.println("baronBurger.changePatties('Chicken')--\t"
+		        + testBaronBurger.toString() + "\n");
+
+		testBaronBurger.removeIngredient("Onions");
+		System.out.println("baronBurger.removeIngredient('Onions')--"
+		        + testBaronBurger.toString() + "\n");
+
+		testBaronBurger.changePatties("Beef");
+		System.out.println("baronBurger.changePatties('Beef')--\t"
+		        + testBaronBurger.toString() + "\n");
+
+		testBaronBurger.removeCategory("Cheese");
+		System.out.println("baronBurger.removeCategory('Cheese')-- \t"
+		        + testBaronBurger.toString() + "\n");
+
+		testBaronBurger.addCategory("Cheese");
+		System.out.println("baronBurger.addCategory('Cheese')-- \t"
+		        + testBaronBurger.toString() + "\n");
+
+		testBaronBurger.removeCategory("Veggies");
+		System.out.println("baronBurger.removeCategory('Veggies')--\t"
+		        + testBaronBurger.toString() + "\n");
+
+		testBaronBurger.addPatty();
+		System.out.println("baronBurger.addPatty() -- \t\t" + testBaronBurger
+		        + "\n");
+
+		testBaronBurger.removeCategory("Sauces");
+		System.out.println("baronBurger.removeCategory('Sauces')--\t"
+		        + testBaronBurger.toString() + "\n");
+
+		testBaronBurger.changePatties("Chicken");
+		System.out.println("baronBurger.changePatties('Chicken')--\t"
+		        + testBaronBurger.toString() + "\n");
+
+		testBaronBurger.removePatty();
+		System.out.println("baronburger.removePatty()-- \t\t" + testBaronBurger
+		        + "\n");
+
+		testBaronBurger.addPatty();
+		System.out.println("baronBurger.addPatty() -- \t\t" + testBaronBurger
+		        + "\n");
+
+		testBaronBurger.addPatty();
+		System.out.println("baronBurger.addPatty() -- \t\t" + testBaronBurger
+		        + "\n");
+		testBaronBurger.addPatty();
+		System.out.println("baronBurger.addPatty() -- \t\t" + testBaronBurger
+		        + "\n");
+
+		testBaronBurger.addCategory("with");
+		System.out.println("baronBurger.addCategory('with')-- \t"
+		        + testBaronBurger.toString() + "\n");
+		testBaronBurger.addCategory("Sauces");
+		System.out.println("baronBurger.addCategory('Sauces')-- \t"
+		        + testBaronBurger.toString() + "\n");
+
+		testBaronBurger.clear();
+		System.out
+		        .println("testBaronBurger.clear()  -- \t\t" + testBaronBurger);
+
+	}
 }
