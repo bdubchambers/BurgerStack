@@ -1,6 +1,7 @@
 /**
  * 
- * @author Brandon Chambers
+ * @author Brandon Chambers 
+ *         Brendan Crawford
  * 
  *         the Burger Class
  * 
